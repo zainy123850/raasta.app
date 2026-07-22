@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raasta — fleet journey tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --panel:#ffffff; --panel-2:#f4f7fd; --line:#bcd3f7;
+  --amber:#2f6fed; --amber-dim:#9db8ee; --text:#1a1c2b; --text-dim:#5b6178;
+  --text-mute:#8992a8; --danger:#d9694f; --ok:#3fae6f; --radius:10px;
+  --purple:#9b7ce8; --purple-dim:#e4d9fb; --purple-bg:#f4effe;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:
+    linear-gradient(var(--bg), var(--bg)),
+    repeating-linear-gradient(0deg, rgba(47,111,237,0.05) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgba(155,124,232,0.05) 0 1px, transparent 1px 48px);
+  color:var(--text); font-family:'Space Grotesk', sans-serif; min-height:100vh; padding:0 0 4rem;
+}
+.mono{font-family:'JetBrains Mono', monospace;}
+.wrap{max-width:900px; margin:0 auto; padding:0 24px;}
+header.top{border-bottom:2px solid var(--line); padding:20px 0; margin-bottom:32px; box-shadow:0 2px 12px rgba(47,111,237,0.06);}
+header.top .wrap{display:flex; align-items:center; justify-content:space-between;}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand .mark{width:30px; height:30px; border:2px solid var(--amber); border-radius:4px; display:flex; align-items:center; justify-content:center; color:var(--amber); font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; transform:rotate(45deg); box-shadow:0 0 0 3px var(--purple-bg);}
+.brand .mark span{transform:rotate(-45deg);}
+.brand-name{font-weight:600; font-size:16px; letter-spacing:0.02em;}
+.brand-sub{font-size:11px; color:var(--text-mute); font-family:'JetBrains Mono',monospace; letter-spacing:0.05em; text-transform:uppercase;}
+.brand-powered{font-size:10px; color:var(--purple); font-family:'JetBrains Mono',monospace; letter-spacing:0.03em; margin-top:2px;}
+.tag{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mute); border:1px solid var(--line); padding:4px 10px; border-radius:20px;}
+.tag.status-ok{color:var(--ok); border-color:var(--ok);}
+.tag.status-bad{color:var(--danger); border-color:var(--danger);}
+.view{display:none;} .view.active{display:block;}
+.hero{padding:56px 0 48px; border-bottom:2px solid var(--line); margin-bottom:36px;}
+.eyebrow{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--purple); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px; background:var(--purple-bg); display:inline-block; padding:5px 12px; border-radius:20px; border:1px solid var(--purple-dim);}
+.hero h1{font-size:56px; font-weight:700; line-height:1.08; max-width:720px; margin-bottom:20px; letter-spacing:-0.01em;}
+.hero p{color:var(--text-dim); max-width:520px; font-size:16px; line-height:1.6;}
+.employee-chip{margin-top:18px; display:inline-block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); background:var(--panel-2); border:1px solid var(--line); padding:6px 12px; border-radius:20px;}
+.employee-chip a{color:var(--amber); text-decoration:underline; cursor:pointer;}
+.employee-chip b{color:var(--text);}
+.choice-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.choice-card{background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:28px 24px; cursor:pointer; text-align:left; transition:border-color .15s, transform .1s, box-shadow .15s; box-shadow:0 1px 3px rgba(47,111,237,0.06);}
+.choice-card:hover{border-color:var(--amber); transform:translateY(-2px); box-shadow:0 8px 20px rgba(47,111,237,0.12);}
+.choice-card .idx{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--purple); margin-bottom:16px; font-weight:600;}
+.choice-card h3{font-size:19px; font-weight:600; margin-bottom:8px;}
+.choice-card p{font-size:13px; color:var(--text-dim); line-height:1.5;}
+.panel{background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:24px; box-shadow:0 1px 4px rgba(47,111,237,0.06);}
+.panel + .panel{margin-top:16px;}
+.section-title{font-size:13px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-mute); margin-bottom:16px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:13px; color:var(--text-dim); margin-bottom:6px;}
+.field input, .field select{width:100%; background:var(--panel-2); border:1.5px solid var(--line); border-radius:4px; color:var(--text); padding:10px 12px; font-size:14px; font-family:'JetBrains Mono',monospace;}
+.field input:focus, .field select:focus{outline:none; border-color:var(--amber); box-shadow:0 0 0 3px rgba(47,111,237,0.12);}
+.field .hint{font-size:11px; color:var(--text-mute); margin-top:5px;}
+.btn{background:var(--amber); color:#ffffff; border:none; border-radius:4px; padding:11px 20px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; cursor:pointer; transition:opacity .15s, box-shadow .15s; box-shadow:0 2px 8px rgba(47,111,237,0.25);}
+.btn:hover{opacity:0.9;} .btn.ghost{background:var(--purple-bg); color:var(--purple); border:1.5px solid var(--purple-dim); box-shadow:none;}
+.btn.ghost:hover{border-color:var(--purple); opacity:1;} .btn:disabled{opacity:0.4; cursor:not-allowed; box-shadow:none;}
+.btn-row{display:flex; gap:10px; margin-top:20px;}
+.band-badge{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:12px; padding:4px 10px; border-radius:20px; border:1.5px solid var(--purple-dim); background:var(--purple-bg); color:var(--purple);}
+.track-stat-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px;}
+.stat{background:var(--panel-2); border-radius:4px; padding:16px; border:1px solid var(--line);}
+.stat .label{font-size:11px; color:var(--text-mute); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;}
+.stat .value{font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:600; color:var(--amber);}
+.stat .unit{font-size:11px; color:var(--text-mute); margin-left:4px;}
+.path-box{background:var(--panel-2); border:1.5px solid var(--line); border-radius:4px; height:220px; margin-bottom:20px; position:relative; overflow:hidden;}
+.path-box #liveMap{width:100%; height:100%;}
+.path-box .empty-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--text-mute); font-size:13px; font-family:'JetBrains Mono',monospace; text-align:center; padding:20px; pointer-events:none; background:var(--panel-2); z-index:1;}
+.rec-live{display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mute);}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--text-mute);}
+.dot.on{background:var(--danger); animation:pulse 1.4s infinite;}
+@keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+.expense-row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; border-bottom:1px solid var(--line);}
+.expense-row:last-child{border-bottom:none;}
+.expense-row .info{flex:1;} .expense-row .info h4{font-size:14px; margin-bottom:3px;}
+.expense-row .info p{font-size:12px; color:var(--text-mute);}
+.expense-row .ctrl{display:flex; align-items:center; gap:8px;}
+.expense-row input[type=number]{width:100px; background:var(--panel-2); border:1px solid var(--line); border-radius:4px; color:var(--text); padding:8px 10px; font-family:'JetBrains Mono',monospace; font-size:13px;}
+.file-label{border:1px dashed var(--line); border-radius:4px; padding:8px 12px; font-size:12px; color:var(--text-dim); cursor:pointer; font-family:'JetBrains Mono',monospace; white-space:nowrap; display:inline-block;}
+.file-label.attached{border-color:var(--ok); color:var(--ok); border-style:solid;}
+.file-label input{display:none;}
+.note-box{background:var(--purple-bg); border:1.5px solid var(--purple-dim); border-radius:4px; padding:12px 14px; font-size:12.5px; color:var(--text-dim); line-height:1.6; margin-top:16px;}
+.note-box b{color:var(--purple);}
+.summary-row{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line); font-size:14px;}
+.summary-row:last-child{border-bottom:none;} .summary-row.total{font-weight:600; font-size:16px; padding-top:14px;}
+.summary-row .val{font-family:'JetBrains Mono',monospace; color:var(--amber);}
+.history-item{background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:0 1px 4px rgba(47,111,237,0.05);}
+.history-item .h-left h4{font-size:14px; margin-bottom:4px;}
+.history-item .h-left p{font-size:12px; color:var(--text-mute); font-family:'JetBrains Mono',monospace;}
+.history-item .h-right{text-align:right;}
+.history-item .h-right .dist{font-family:'JetBrains Mono',monospace; font-size:16px; color:var(--amber); font-weight:600;}
+.history-item .h-right .cost{font-size:12px; color:var(--text-mute);}
+.empty-state{text-align:center; padding:60px 20px; color:var(--text-mute);}
+.empty-state h3{color:var(--text-dim); margin-bottom:8px; font-weight:600;} .empty-state p{font-size:13px;}
+.back-link{display:inline-flex; align-items:center; gap:6px; color:var(--text-dim); font-size:13px; text-decoration:none; cursor:pointer; margin-bottom:20px; font-family:'JetBrains Mono',monospace;}
+.back-link:hover{color:var(--amber);}
+.auth-loading{text-align:center; padding:40px 20px; color:var(--text-mute); font-family:'JetBrains Mono',monospace; font-size:13px;}
+
+@media (max-width: 640px){
+  .wrap{padding:0 16px;}
+  header.top .wrap{flex-wrap:wrap; gap:10px;}
+  .hero{padding:36px 0 32px;}
+  .hero h1{font-size:34px;}
+  .hero p{font-size:14px;}
+  .choice-grid{grid-template-columns:1fr;}
+  .track-stat-grid{grid-template-columns:1fr 1fr; gap:10px;}
+  .track-stat-grid .stat:last-child{grid-column:1 / -1;}
+  .expense-row{flex-wrap:wrap;}
+  .expense-row .ctrl{width:100%; justify-content:space-between;}
+  .expense-row input[type=number]{flex:1; min-width:0;}
+  .path-box{height:200px;}
+  .btn-row{flex-wrap:wrap;}
+  .btn-row .btn, .btn-row .btn.ghost{flex:1; min-width:140px;}
+}
+@media (max-width: 400px){
+  .hero h1{font-size:28px;}
+  .track-stat-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark"><span>R</span></div>
+      <div><div class="brand-name">Raasta</div><div class="brand-sub">Fleet journey tracker</div><div class="brand-powered">Powered by Etimaad Engineering</div></div>
+    </div>
+    <div class="tag mono" id="dbStatus">Connecting to database…</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="view active" id="view-auth">
+    <div class="hero" style="border-bottom:none; padding-bottom:12px;">
+      <div class="eyebrow">Employee sign-in</div>
+      <h1 style="font-size:38px;">Welcome to Raasta</h1>
+      <p>Enter your employee ID to continue. First time here? We'll help you set up a profile.</p>
+    </div>
+    <div id="authCheckingState" class="auth-loading" style="display:none;">Checking for a saved session…</div>
+    <div id="authFormState">
+      <div class="panel">
+        <div class="section-title">Employee ID</div>
+        <div class="field">
+          <input type="text" id="employeeIdInput" placeholder="e.g. EMP-1042" oninput="clearAuthError()">
+          <div class="hint" id="authHint">We'll look up your profile, or help you create one.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="checkEmployee()">Continue</button>
+          <button class="btn ghost" onclick="showSignupDirectly()">New here? Create profile</button>
+        </div>
+      </div>
+      <div class="panel" id="signupPanel" style="display:none;">
+        <div class="section-title">Create your profile</div>
+        <div class="field">
+          <label>Full name</label>
+          <input type="text" id="signupName" placeholder="e.g. Ahmed Raza">
+        </div>
+        <div class="field">
+          <label>Project</label>
+          <input type="text" id="signupProject" placeholder="e.g. Lahore Ring Road Extension">
+        </div>
+        <div class="field">
+          <label>Project location</label>
+          <input type="text" id="signupLocation" placeholder="e.g. Lahore, Punjab">
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="createEmployee()">Create profile & continue</button>
+          <button class="btn ghost" onclick="cancelSignup()">Back</button>
+        </div>
+        <div class="hint" id="signupHint" style="margin-top:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-landing">
+    <div class="hero">
+      <div class="eyebrow">Site visit cost tracking</div>
+      <h1>Track the journey. Know the cost per kilometre.</h1>
+      <p>Log a site visit, categorise the vehicle by engine capacity, and capture fuel, oil, maintenance and token tax proof — all rolled into one per-km figure for reimbursement.</p>
+      <div class="employee-chip" id="employeeChip"></div>
+    </div>
+    <div class="choice-grid">
+      <div class="choice-card" onclick="goTo('history')">
+        <div class="idx">01 / ARCHIVE</div>
+        <h3>See past history</h3>
+        <p>Review completed journeys, distances covered, and their calculated cost breakdown.</p>
+      </div>
+      <div class="choice-card" onclick="goTo('newjourney')">
+        <div class="idx">02 / LOG</div>
+        <h3>Start a new journey</h3>
+        <p>Enter your vehicle's engine capacity, begin tracking, and close out the trip with cost proofs.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-newjourney">
+    <a class="back-link" onclick="goTo('landing')">← Back</a>
+    <div class="panel">
+      <div class="section-title">Vehicle details</div>
+      <div class="field">
+        <label>Engine capacity (cc)</label>
+        <input type="number" id="ccInput" placeholder="e.g. 1300" oninput="updateBand()">
+        <div class="hint">Used to auto-categorise your car into a standard cc division for cost averaging.</div>
+      </div>
+      <div id="bandResult" style="display:none; margin-bottom:16px;">
+        <span class="band-badge mono" id="bandBadge"></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="startTrackBtn" onclick="startJourney()" disabled>Start tracking journey</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-tracking">
+    <div class="panel">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div class="section-title" style="margin-bottom:0;">Journey in progress · <span class="band-badge mono" id="trackBandBadge"></span></div>
+        <div class="rec-live"><div class="dot on"></div> recording</div>
+      </div>
+      <div class="track-stat-grid">
+        <div class="stat"><div class="label">Distance</div><div class="value" id="liveDistance">0.00<span class="unit">km</span></div></div>
+        <div class="stat"><div class="label">GPS points</div><div class="value" id="livePoints">0</div></div>
+        <div class="stat"><div class="label">Est. fuel cost</div><div class="value mono" id="liveFuelCost" style="font-size:18px;">Rs 0</div></div>
+      </div>
+      <div class="path-box" id="pathBox">
+        <div id="liveMap"></div>
+        <div class="empty-msg" id="pathEmptyMsg">Waiting for GPS signal — your position plots on the map as points come in.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="endJourney()">End journey</button>
+        <button class="btn ghost" onclick="simulateStep()">Simulate GPS step (demo)</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-title">Cost proofs for this journey</div>
+      <div class="expense-row">
+        <div class="info"><h4>Token tax</h4><p>Annual token tax receipt, amortised into this trip</p></div>
+        <div class="ctrl">
+          <input type="number" id="tokenTaxInput" placeholder="Rs / year" oninput="recalcLive()">
+          <label class="file-label" id="tokenFileLabel">+ attach proof<input type="file" accept="image/*,.pdf" onchange="fileSelected(this,'tokenFileLabel')"></label>
+        </div>
+      </div>
+      <div class="expense-row">
+        <div class="info"><h4>Repair & maintenance</h4><p>Workshop receipt for this period</p></div>
+        <div class="ctrl">
+          <input type="number" id="repairInput" placeholder="Rs" oninput="recalcLive()">
+          <label class="file-label" id="repairFileLabel">+ attach proof<input type="file" accept="image/*,.pdf" onchange="fileSelected(this,'repairFileLabel')"></label>
+        </div>
+      </div>
+      <div class="expense-row">
+        <div class="info"><h4>Oil change</h4><p>Most recent oil change receipt</p></div>
+        <div class="ctrl">
+          <input type="number" id="oilInput" placeholder="Rs" oninput="recalcLive()">
+          <label class="file-label" id="oilFileLabel">+ attach proof<input type="file" accept="image/*,.pdf" onchange="fileSelected(this,'oilFileLabel')"></label>
+        </div>
+      </div>
+      <div class="note-box"><b>Live now.</b> Receipt files upload for real to your Supabase <span class="mono">receipts</span> bucket when you end the journey.</div>
+    </div>
+  </div>
+
+  <div class="view" id="view-summary">
+    <div class="panel">
+      <div class="section-title">Journey summary</div>
+      <div class="summary-row"><span>Vehicle band</span><span class="val mono" id="sumBand">—</span></div>
+      <div class="summary-row"><span>Distance travelled</span><span class="val mono" id="sumDist">—</span></div>
+      <div class="summary-row"><span>Fuel cost</span><span class="val mono" id="sumFuel">—</span></div>
+      <div class="summary-row"><span>Token tax (amortised)</span><span class="val mono" id="sumToken">—</span></div>
+      <div class="summary-row"><span>Maintenance (amortised)</span><span class="val mono" id="sumMaint">—</span></div>
+      <div class="summary-row"><span>Oil change (amortised)</span><span class="val mono" id="sumOil">—</span></div>
+      <div class="summary-row total"><span>Total journey cost</span><span class="val mono" id="sumTotal">—</span></div>
+      <div class="btn-row"><button class="btn" onclick="goTo('landing')">Done — return home</button></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-history">
+    <a class="back-link" onclick="goTo('landing')">← Back</a>
+    <div class="section-title">Past journeys</div>
+    <div id="historyList"></div>
+  </div>
+
+</div>
+
+<script>
+// ---- Supabase connection ----
+const SUPABASE_URL = 'https://dnhxcffckfslksrpypzs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuaHhjZmZja2ZzbGtzcnB5cHpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2OTQ4MzksImV4cCI6MjEwMDI3MDgzOX0.8adsbSgmxVFL4wws1CjJa93Wwww0FFHC_D_xVCxOvZo';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let state = { cc:null, band:null, points:[], distanceKm:0, fuelPrice:320.73, vehicleId:null, files:{} };
+let liveMap = null, liveMarker = null, livePolyline = null;
+let currentEmployee = null;
+
+const SESSION_KEY = 'raasta_employee_id';
+
+(async function checkConnection(){
+  const tag = document.getElementById('dbStatus');
+  const { error } = await db.from('vehicles').select('id').limit(1);
+  if(error){
+    tag.textContent = 'DB error — check console';
+    tag.classList.add('status-bad');
+    console.error(error);
+  } else {
+    tag.textContent = 'Connected to Supabase';
+    tag.classList.add('status-ok');
+  }
+})();
+
+(async function loadFuelPrice(){
+  const { data, error } = await db.from('settings').select('value').eq('key', 'fuel_price').single();
+  if(!error && data && !isNaN(parseFloat(data.value))){
+    state.fuelPrice = parseFloat(data.value);
+    recalcLive();
+  } else {
+    console.log('Using fallback fuel price — could not load live price from settings table.');
+  }
+})();
+
+// Try to resume a saved session on load, so returning employees skip re-entering their ID.
+(async function resumeSession(){
+  const savedId = localStorage.getItem(SESSION_KEY);
+  if(!savedId) return;
+  document.getElementById('authCheckingState').style.display = 'block';
+  document.getElementById('authFormState').style.display = 'none';
+  const { data, error } = await db.from('employees').select('*').eq('employee_id', savedId).maybeSingle();
+  document.getElementById('authCheckingState').style.display = 'none';
+  document.getElementById('authFormState').style.display = 'block';
+  if(!error && data){
+    currentEmployee = data;
+    enterApp();
+  } else {
+    localStorage.removeItem(SESSION_KEY);
+  }
+})();
+
+function goTo(view){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  if(view === 'history') renderHistory();
+  if(view !== 'auth' && !currentEmployee) { goTo('auth'); return; }
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function clearAuthError(){
+  const hint = document.getElementById('authHint');
+  hint.textContent = "We'll look up your profile, or help you create one.";
+  hint.style.color = '';
+}
+
+async function checkEmployee(){
+  const empId = document.getElementById('employeeIdInput').value.trim();
+  const hint = document.getElementById('authHint');
+  if(!empId){
+    hint.textContent = 'Enter your employee ID first.';
+    hint.style.color = 'var(--danger)';
+    return;
+  }
+  hint.textContent = 'Looking up your profile…';
+  hint.style.color = '';
+  const { data, error } = await db.from('employees').select('*').eq('employee_id', empId).maybeSingle();
+  if(error){
+    hint.textContent = 'Could not reach the database — try again.';
+    hint.style.color = 'var(--danger)';
+    console.error(error);
+    return;
+  }
+  if(data){
+    currentEmployee = data;
+    enterApp();
+  } else {
+    hint.textContent = 'No profile found for this ID — fill in your details below to create one.';
+    document.getElementById('signupPanel').style.display = 'block';
+  }
+}
+
+async function createEmployee(){
+  const empId = document.getElementById('employeeIdInput').value.trim();
+  const name = document.getElementById('signupName').value.trim();
+  const project = document.getElementById('signupProject').value.trim();
+  const location = document.getElementById('signupLocation').value.trim();
+  const signupHint = document.getElementById('signupHint');
+  signupHint.style.color = 'var(--danger)';
+  if(!empId){
+    signupHint.textContent = 'Scroll up and enter your employee ID first, then come back down here.';
+    return;
+  }
+  if(!name || !project || !location){
+    signupHint.textContent = 'Please fill in every field to create your profile.';
+    return;
+  }
+  signupHint.style.color = '';
+  signupHint.textContent = 'Creating your profile…';
+  const { data, error } = await db.from('employees')
+    .insert({ employee_id: empId, name, project, project_location: location })
+    .select().single();
+  if(error){
+    console.error(error);
+    signupHint.style.color = 'var(--danger)';
+    signupHint.textContent = 'Could not create profile: ' + error.message;
+    return;
+  }
+  currentEmployee = data;
+  enterApp();
+}
+
+function cancelSignup(){
+  document.getElementById('signupPanel').style.display = 'none';
+  clearAuthError();
+}
+
+function showSignupDirectly(){
+  document.getElementById('signupPanel').style.display = 'block';
+  const hint = document.getElementById('authHint');
+  hint.textContent = 'Enter an employee ID above, then fill in your details below to create your profile.';
+  hint.style.color = '';
+  document.getElementById('signupPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function enterApp(){
+  localStorage.setItem(SESSION_KEY, currentEmployee.employee_id);
+  document.getElementById('employeeChip').innerHTML =
+    `Signed in as <b>${escapeHtml(currentEmployee.name)}</b> · ${escapeHtml(currentEmployee.project)}, ${escapeHtml(currentEmployee.project_location)} — <a onclick="switchEmployee()">Switch</a>`;
+  goTo('landing');
+}
+
+function switchEmployee(){
+  currentEmployee = null;
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('employeeIdInput').value = '';
+  document.getElementById('signupPanel').style.display = 'none';
+  clearAuthError();
+  goTo('auth');
+}
+
+function classifyBand(cc){
+  if(cc <= 1000) return "Small (<=1000cc)";
+  if(cc <= 1500) return "Mid (1001-1500cc)";
+  return "Large (1501-2000cc)";
+}
+function updateBand(){
+  const cc = parseInt(document.getElementById('ccInput').value);
+  const btn = document.getElementById('startTrackBtn');
+  const badgeWrap = document.getElementById('bandResult');
+  const badge = document.getElementById('bandBadge');
+  if(cc && cc > 0){
+    const band = classifyBand(cc);
+    badge.textContent = band; badgeWrap.style.display = 'block'; btn.disabled = false;
+    state.cc = cc; state.band = band;
+  } else { badgeWrap.style.display = 'none'; btn.disabled = true; }
+}
+
+async function startJourney(){
+  if(!currentEmployee){ goTo('auth'); return; }
+  state.points = []; state.distanceKm = 0; state.files = {};
+  document.getElementById('trackBandBadge').textContent = state.band;
+  document.getElementById('liveDistance').innerHTML = '0.00<span class="unit">km</span>';
+  document.getElementById('livePoints').textContent = '0';
+  document.getElementById('pathEmptyMsg').style.display = 'flex';
+  liveMap = null; liveMarker = null; livePolyline = null;
+  document.getElementById('liveMap').innerHTML = '';
+  document.getElementById('tokenTaxInput').value = '';
+  document.getElementById('repairInput').value = '';
+  document.getElementById('oilInput').value = '';
+  ['tokenFileLabel','repairFileLabel','oilFileLabel'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.classList.remove('attached');
+    el.childNodes[0].textContent = '+ attach proof';
+  });
+
+  const { data, error } = await db.from('vehicles')
+    .insert({ cc: state.cc, band: state.band })
+    .select().single();
+  if(!error) state.vehicleId = data.id;
+  else console.error('Could not create vehicle row', error);
+
+  goTo('tracking');
+
+  if(navigator.geolocation){
+    state.watchId = navigator.geolocation.watchPosition(
+      pos => addPoint(pos.coords.latitude, pos.coords.longitude),
+      err => console.log('Geolocation unavailable — use the simulate button.'),
+      { enableHighAccuracy: true }
+    );
+  }
+}
+
+function haversine(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180, dLon = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function addPoint(lat, lon){
+  const prev = state.points[state.points.length - 1];
+  if(prev) state.distanceKm += haversine(prev.lat, prev.lon, lat, lon);
+  state.points.push({lat, lon});
+  document.getElementById('pathEmptyMsg').style.display = 'none';
+  document.getElementById('liveDistance').innerHTML = state.distanceKm.toFixed(2) + '<span class="unit">km</span>';
+  document.getElementById('livePoints').textContent = state.points.length;
+  updateLiveMap(lat, lon);
+  recalcLive();
+}
+function updateLiveMap(lat, lon){
+  if(typeof L === 'undefined') return;
+  const pos = [lat, lon];
+  if(!liveMap){
+    liveMap = L.map('liveMap', { zoomControl: true, attributionControl: false }).setView(pos, 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(liveMap);
+    livePolyline = L.polyline([], { color: '#2f6fed', weight: 3 }).addTo(liveMap);
+    liveMarker = L.circleMarker(pos, {
+      radius: 8, fillColor: '#9b7ce8', fillOpacity: 1, color: '#ffffff', weight: 2
+    }).addTo(liveMap);
+  }
+  liveMarker.setLatLng(pos);
+  livePolyline.addLatLng(pos);
+  liveMap.panTo(pos);
+}
+function simulateStep(){
+  const last = state.points[state.points.length - 1];
+  const lat = last ? last.lat + (Math.random()-0.3)*0.004 : 31.5204;
+  const lon = last ? last.lon + (Math.random()-0.3)*0.004 : 74.3587;
+  addPoint(lat, lon);
+}
+function fileSelected(input, labelId){
+  const label = document.getElementById(labelId);
+  const type = labelId.replace('FileLabel','');
+  if(input.files[0]){
+    state.files[type] = input.files[0];
+    label.classList.add('attached');
+    label.childNodes[0].textContent = '✓ ' + input.files[0].name.slice(0,16);
+  }
+}
+function recalcLive(){
+  const fuelCost = state.fuelPrice * state.distanceKm / getEfficiency(state.band);
+  document.getElementById('liveFuelCost').textContent = 'Rs ' + Math.round(fuelCost).toLocaleString();
+}
+function getEfficiency(band){
+  if(band && band.startsWith('Small')) return 17;
+  if(band && band.startsWith('Mid')) return 14;
+  return 12;
+}
+
+async function endJourney(){
+  if(state.watchId) navigator.geolocation.clearWatch(state.watchId);
+  const dist = state.distanceKm;
+  const eff = getEfficiency(state.band);
+  const fuel = state.fuelPrice * dist / eff;
+  const tokenAnnual = parseFloat(document.getElementById('tokenTaxInput').value) || 0;
+  const repair = parseFloat(document.getElementById('repairInput').value) || 0;
+  const oil = parseFloat(document.getElementById('oilInput').value) || 0;
+  const tokenAmortised = (tokenAnnual / 15000) * dist;
+  const total = fuel + tokenAmortised + repair + oil;
+
+  document.getElementById('sumBand').textContent = state.band || '—';
+  document.getElementById('sumDist').textContent = dist.toFixed(2) + ' km';
+  document.getElementById('sumFuel').textContent = 'Rs ' + Math.round(fuel).toLocaleString();
+  document.getElementById('sumToken').textContent = 'Rs ' + Math.round(tokenAmortised).toLocaleString();
+  document.getElementById('sumMaint').textContent = 'Rs ' + Math.round(repair).toLocaleString();
+  document.getElementById('sumOil').textContent = 'Rs ' + Math.round(oil).toLocaleString();
+  document.getElementById('sumTotal').textContent = 'Rs ' + Math.round(total).toLocaleString();
+
+  goTo('summary');
+
+  const { data: journey, error } = await db.from('journeys').insert({
+    vehicle_id: state.vehicleId, band: state.band, distance_km: dist,
+    fuel_cost: fuel, token_tax_cost: tokenAmortised, maintenance_cost: repair,
+    oil_cost: oil, total_cost: total,
+    employee_id: currentEmployee ? currentEmployee.employee_id : null
+  }).select().single();
+
+  if(error){ console.error('Could not save journey', error); return; }
+
+  for(const [type, file] of Object.entries(state.files)){
+    const path = `${journey.id}/${type}-${file.name}`;
+    const { error: upErr } = await db.storage.from('receipts').upload(path, file);
+    if(upErr){ console.error('Upload failed for', type, upErr); continue; }
+    const { data: urlData } = db.storage.from('receipts').getPublicUrl(path);
+    const amount = type === 'token' ? tokenAnnual : type === 'repair' ? repair : oil;
+    await db.from('receipts').insert({
+      journey_id: journey.id, type, amount, file_url: urlData.publicUrl
+    });
+  }
+}
+
+async function renderHistory(){
+  const list = document.getElementById('historyList');
+  list.innerHTML = '<div class="empty-state">Loading…</div>';
+  let query = db.from('journeys').select('*').order('created_at', { ascending:false });
+  if(currentEmployee) query = query.eq('employee_id', currentEmployee.employee_id);
+  const { data, error } = await query;
+  if(error){
+    list.innerHTML = '<div class="empty-state"><h3>Couldn\'t load history</h3><p>' + error.message + '</p></div>';
+    return;
+  }
+  if(!data || data.length === 0){
+    list.innerHTML = '<div class="empty-state"><h3>No journeys logged yet</h3><p>Start a new journey to see it appear here.</p></div>';
+    return;
+  }
+  list.innerHTML = data.map(r => `
+    <div class="history-item">
+      <div class="h-left"><h4>${r.band}</h4><p>${new Date(r.created_at).toLocaleDateString()}</p></div>
+      <div class="h-right"><div class="dist">${Number(r.distance_km).toFixed(2)} km</div><div class="cost">Rs ${Math.round(r.total_cost).toLocaleString()} total</div></div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
