@@ -53,7 +53,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
 .employee-chip{margin-top:18px; display:inline-block; font-family:var(--font-plain); font-size:12px; color:var(--text-dim); background:var(--panel-2); border:1px solid var(--line); padding:6px 12px; border-radius:20px;}
 .employee-chip a{color:var(--amber); text-decoration:underline; cursor:pointer;}
 .employee-chip b{color:var(--text);}
-.choice-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.choice-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;}
 .choice-card{background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:28px 24px; cursor:pointer; text-align:left; transition:border-color .15s, transform .1s, box-shadow .15s; box-shadow:0 1px 3px rgba(0,0,0,0.06);}
 .choice-card:hover{border-color:var(--maroon); transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.12);}
 .choice-card .idx{font-family:var(--font-plain); font-size:12px; color:var(--purple); margin-bottom:16px; font-weight:600;}
@@ -73,6 +73,11 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
 .btn-row{display:flex; gap:10px; margin-top:20px;}
 .band-badge{display:inline-block; font-family:var(--font-plain); font-size:12px; padding:4px 10px; border-radius:20px; border:1.5px solid var(--purple-dim); background:var(--purple-bg); color:var(--purple);}
 .track-stat-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px;}
+.form-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.cost-stat-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px;}
+.allowance-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px;}
+.allowance-grid .stat .value{font-size:26px; color:var(--maroon);}
+.manual-note{font-size:12px; color:var(--text-mute); line-height:1.6; margin-top:18px; padding-top:16px; border-top:1px solid var(--line);}
 .stat{background:var(--panel-2); border-radius:4px; padding:16px; border:1px solid var(--line);}
 .stat .label{font-size:11px; color:var(--text-mute); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;}
 .stat .value{font-family:var(--font-plain); font-size:22px; font-weight:600; color:var(--amber);}
@@ -141,6 +146,9 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
   .choice-grid{grid-template-columns:1fr;}
   .track-stat-grid{grid-template-columns:1fr 1fr; gap:10px;}
   .track-stat-grid .stat:last-child{grid-column:1 / -1;}
+  .form-grid-2{grid-template-columns:1fr;}
+  .cost-stat-grid{grid-template-columns:1fr 1fr; gap:10px;}
+  .allowance-grid{grid-template-columns:1fr;}
   .expense-row{flex-wrap:wrap;}
   .expense-row .ctrl{width:100%; justify-content:space-between;}
   .expense-row input[type=number]{flex:1; min-width:0;}
@@ -242,9 +250,14 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
         <p>Review completed journeys, distances covered, and their calculated cost breakdown.</p>
       </div>
       <div class="choice-card" onclick="goTo('newjourney')">
-        <div class="idx">02 / LOG</div>
+        <div class="idx">02 / LIVE</div>
         <h3>Start a new journey</h3>
-        <p>Enter your vehicle's engine capacity, begin tracking, and close out the trip with cost proofs.</p>
+        <p>GPS-tracked site visit. Enter engine capacity, track the drive, and close out with cost proofs.</p>
+      </div>
+      <div class="choice-card" onclick="goTo('manual')">
+        <div class="idx">03 / MANUAL</div>
+        <h3>Estimate an allowance</h3>
+        <p>No tracking needed — enter assumed km, fuel, oil, maintenance and insurance to budget a per-km allowance.</p>
       </div>
     </div>
   </div>
@@ -264,6 +277,113 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       <div class="btn-row">
         <button class="btn" id="startTrackBtn" onclick="startJourney()" disabled>Start tracking journey</button>
       </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-manual">
+    <a class="back-link" onclick="goTo('landing')">← Back</a>
+    <div class="panel">
+      <div class="section-title">Vehicle</div>
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Reference / vehicle label <span style="color:var(--text-mute);">(optional)</span></label>
+          <input type="text" id="manualLabelInput" placeholder="e.g. Honda City — Sales team">
+        </div>
+        <div class="field">
+          <label>Engine capacity (cc)</label>
+          <input type="number" id="manualCcInput" placeholder="e.g. 1300" oninput="updateManualBand()">
+          <div class="hint">Check the registration book (yellow "book") or ask the driver.</div>
+        </div>
+      </div>
+      <div id="manualBandResult" style="display:none; margin-bottom:4px;">
+        <span class="band-badge mono" id="manualBandBadge"></span>
+      </div>
+      <div class="field">
+        <label>Purchase / invoice value (Rs) <span style="color:var(--text-mute);">(only needed above 1000cc)</span></label>
+        <input type="number" id="manualInvoiceInput" placeholder="e.g. 5000000">
+        <div class="hint">Used only to estimate annual token tax for cars over 1000cc — it's a % of this value. Leave blank for 1000cc and under, that tax is a fixed Rs 20,000/year.</div>
+      </div>
+
+      <div class="section-title" style="margin-top:8px;">How much will it be driven?</div>
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Estimated distance</label>
+          <input type="number" id="manualKmInput" placeholder="e.g. 1200">
+        </div>
+        <div class="field">
+          <label>Period</label>
+          <select id="manualKmPeriod">
+            <option value="month">Per month</option>
+            <option value="year">Per year</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:8px;">Running costs (best estimates — edit anything you actually know)</div>
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Fuel efficiency (km per litre)</label>
+          <input type="number" id="manualEfficiencyInput" step="0.1" placeholder="e.g. 14" oninput="this.dataset.userEdited='1'">
+          <div class="hint">Auto-filled from a typical value for the cc band once entered above — small cars ~15-19 km/l, mid-size ~12-14.5, larger sedans/SUVs ~10-12. Adjust if the driver knows the real figure.</div>
+        </div>
+        <div class="field">
+          <label>Fuel price (Rs per litre)</label>
+          <input type="number" id="manualFuelPriceInput" step="0.01" placeholder="e.g. 320.73">
+          <div class="hint">Pre-filled with the current price on file — update if it's changed.</div>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Oil changes per year (estimate)</label>
+          <input type="number" id="manualOilCountInput" placeholder="e.g. 4">
+          <div class="hint">Most cars driven for work need one roughly every 3,000-5,000 km.</div>
+        </div>
+        <div class="field">
+          <label>Cost per oil change (Rs)</label>
+          <input type="number" id="manualOilCostInput" placeholder="e.g. 4000">
+          <div class="hint">Ask a workshop, or check a past receipt — typically Rs 3,000-5,500.</div>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Annual maintenance & repair budget (Rs)</label>
+          <input type="number" id="manualMaintenanceInput" placeholder="e.g. 50000">
+          <div class="hint">General servicing, parts and repairs — a rough yearly figure is fine.</div>
+        </div>
+        <div class="field">
+          <label>Annual insurance estimate (Rs)</label>
+          <input type="number" id="manualInsuranceInput" placeholder="e.g. 150000">
+          <div class="hint">Use a real quote if you have one, otherwise insurers in Pakistan typically price comprehensive cover around 3-5% of the car's value per year.</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Annual token tax override (Rs) <span style="color:var(--text-mute);">(optional)</span></label>
+        <input type="number" id="manualTokenOverrideInput" placeholder="Leave blank to auto-estimate from engine cc">
+        <div class="hint">Only fill this in if you already know the actual amount paid — otherwise it's calculated automatically using current Punjab Excise rules.</div>
+      </div>
+
+      <div id="manualError" class="hint" style="display:none; color:var(--danger); margin-bottom:12px;"></div>
+      <div class="btn-row">
+        <button class="btn" onclick="calcManual()">Calculate allowance estimate</button>
+      </div>
+    </div>
+
+    <div class="panel" id="manualResults" style="display:none;">
+      <div class="section-title">Estimated cost per kilometre</div>
+      <div class="cost-stat-grid">
+        <div class="stat"><div class="label">Fuel</div><div class="value mono" id="manualFuelPerKm" style="font-size:16px;">Rs 0</div></div>
+        <div class="stat"><div class="label">Oil</div><div class="value mono" id="manualOilPerKm" style="font-size:16px;">Rs 0</div></div>
+        <div class="stat"><div class="label">Maintenance</div><div class="value mono" id="manualMaintPerKm" style="font-size:16px;">Rs 0</div></div>
+        <div class="stat"><div class="label">Token tax</div><div class="value mono" id="manualTokenPerKm" style="font-size:16px;">Rs 0</div></div>
+        <div class="stat"><div class="label">Insurance</div><div class="value mono" id="manualInsurancePerKm" style="font-size:16px;">Rs 0</div></div>
+        <div class="stat"><div class="label">Total / km</div><div class="value mono" id="manualTotalPerKm" style="font-size:16px;">Rs 0</div></div>
+      </div>
+      <div class="section-title">Estimated allowance</div>
+      <div class="allowance-grid">
+        <div class="stat"><div class="label">Per month</div><div class="value mono" id="manualMonthlyAllowance">Rs 0</div></div>
+        <div class="stat"><div class="label">Per year</div><div class="value mono" id="manualAnnualAllowance">Rs 0</div></div>
+      </div>
+      <div class="manual-note">Token tax used in this estimate: <span id="manualTokenComputed" class="mono"></span>. This is a budgeting estimate based on the assumptions entered above, not a substitute for actual logged journeys or receipts.</div>
     </div>
   </div>
 
@@ -398,6 +518,10 @@ function goTo(view){
   document.getElementById('view-' + view).classList.add('active');
   document.getElementById('siteHeader').style.display = (view === 'splash') ? 'none' : '';
   if(view === 'history') renderHistory();
+  if(view === 'manual'){
+    const priceInput = document.getElementById('manualFuelPriceInput');
+    if(!priceInput.value) priceInput.value = state.fuelPrice;
+  }
   if(view !== 'auth' && view !== 'splash' && !currentEmployee) { goTo('auth'); return; }
 }
 
@@ -522,6 +646,85 @@ function updateBand(){
     state.cc = cc; state.band = band;
   } else { badgeWrap.style.display = 'none'; btn.disabled = true; }
 }
+function getEfficiency(band){
+  if(band && band.startsWith('Small')) return 17;
+  if(band && band.startsWith('Mid')) return 14;
+  return 12;
+}
+
+// ---- Manual mode: allowance estimator ----
+// Mirrors the same per-km cost model used for live journeys (fuel, oil, maintenance,
+// token tax), plus an insurance line, using assumptions instead of GPS/receipt data.
+function updateManualBand(){
+  const cc = parseInt(document.getElementById('manualCcInput').value);
+  const badgeWrap = document.getElementById('manualBandResult');
+  const badge = document.getElementById('manualBandBadge');
+  const effInput = document.getElementById('manualEfficiencyInput');
+  if(cc && cc > 0){
+    const band = classifyBand(cc);
+    badge.textContent = band; badgeWrap.style.display = 'block';
+    if(!effInput.dataset.userEdited) effInput.value = getEfficiency(band);
+  } else {
+    badgeWrap.style.display = 'none';
+  }
+}
+// Punjab Excise token tax: fixed for <=1000cc, otherwise a % of invoice value.
+// See the Read Me / token tax note the team already uses for company vehicles —
+// verify current slabs on the ePay Punjab portal before relying on this for budgeting.
+function estimateTokenTax(cc, invoiceValue){
+  if(!cc) return 0;
+  if(cc <= 1000) return 20000;
+  if(cc <= 2000) return (invoiceValue || 0) * 0.002;
+  return (invoiceValue || 0) * 0.003;
+}
+function calcManual(){
+  const cc = parseFloat(document.getElementById('manualCcInput').value) || 0;
+  const invoiceValue = parseFloat(document.getElementById('manualInvoiceInput').value) || 0;
+  const kmVal = parseFloat(document.getElementById('manualKmInput').value) || 0;
+  const period = document.getElementById('manualKmPeriod').value;
+  const annualKm = period === 'month' ? kmVal * 12 : kmVal;
+
+  const efficiency = parseFloat(document.getElementById('manualEfficiencyInput').value) || 0;
+  const fuelPrice = parseFloat(document.getElementById('manualFuelPriceInput').value) || state.fuelPrice;
+  const oilCount = parseFloat(document.getElementById('manualOilCountInput').value) || 0;
+  const oilCost = parseFloat(document.getElementById('manualOilCostInput').value) || 0;
+  const maintenance = parseFloat(document.getElementById('manualMaintenanceInput').value) || 0;
+  const insurance = parseFloat(document.getElementById('manualInsuranceInput').value) || 0;
+  const tokenOverrideRaw = document.getElementById('manualTokenOverrideInput').value;
+  const tokenTax = tokenOverrideRaw !== '' ? (parseFloat(tokenOverrideRaw) || 0) : estimateTokenTax(cc, invoiceValue);
+
+  const errBox = document.getElementById('manualError');
+  if(!annualKm || !efficiency){
+    errBox.textContent = 'Enter at least the estimated distance and fuel efficiency to calculate.';
+    errBox.style.display = 'block';
+    document.getElementById('manualResults').style.display = 'none';
+    return;
+  }
+  errBox.style.display = 'none';
+
+  const fuelPerKm = fuelPrice / efficiency;
+  const oilPerKm = (oilCount * oilCost) / annualKm;
+  const maintPerKm = maintenance / annualKm;
+  const tokenPerKm = tokenTax / annualKm;
+  const insurancePerKm = insurance / annualKm;
+  const totalPerKm = fuelPerKm + oilPerKm + maintPerKm + tokenPerKm + insurancePerKm;
+  const annualAllowance = totalPerKm * annualKm;
+  const monthlyAllowance = annualAllowance / 12;
+
+  document.getElementById('manualFuelPerKm').textContent = 'Rs ' + fuelPerKm.toFixed(2);
+  document.getElementById('manualOilPerKm').textContent = 'Rs ' + oilPerKm.toFixed(2);
+  document.getElementById('manualMaintPerKm').textContent = 'Rs ' + maintPerKm.toFixed(2);
+  document.getElementById('manualTokenPerKm').textContent = 'Rs ' + tokenPerKm.toFixed(2);
+  document.getElementById('manualInsurancePerKm').textContent = 'Rs ' + insurancePerKm.toFixed(2);
+  document.getElementById('manualTotalPerKm').textContent = 'Rs ' + totalPerKm.toFixed(2);
+  document.getElementById('manualMonthlyAllowance').textContent = 'Rs ' + Math.round(monthlyAllowance).toLocaleString();
+  document.getElementById('manualAnnualAllowance').textContent = 'Rs ' + Math.round(annualAllowance).toLocaleString();
+  document.getElementById('manualTokenComputed').textContent =
+    'Rs ' + Math.round(tokenTax).toLocaleString() + ' / year' +
+    (tokenOverrideRaw !== '' ? ' (manual override)' : ' (auto-estimated from engine cc' + (cc > 1000 ? ' & invoice value' : '') + ')');
+
+  document.getElementById('manualResults').style.display = 'block';
+}
 
 async function startJourney(){
   if(!currentEmployee){ goTo('auth'); return; }
@@ -610,11 +813,6 @@ function recalcLive(){
   const fuelCost = state.fuelPrice * state.distanceKm / getEfficiency(state.band);
   document.getElementById('liveFuelCost').textContent = 'Rs ' + Math.round(fuelCost).toLocaleString();
 }
-function getEfficiency(band){
-  if(band && band.startsWith('Small')) return 17;
-  if(band && band.startsWith('Mid')) return 14;
-  return 12;
-}
 
 async function endJourney(){
   if(state.watchId) navigator.geolocation.clearWatch(state.watchId);
@@ -682,7 +880,4 @@ async function renderHistory(){
 </script>
 </body>
 </html>
-
-
-
-    
+      
