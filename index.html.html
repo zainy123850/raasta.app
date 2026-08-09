@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -67,6 +67,14 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
 .field input, .field select{width:100%; background:var(--panel-2); border:1.5px solid var(--line); border-radius:4px; color:var(--text); padding:10px 12px; font-size:14px; font-family:var(--font-plain);}
 .field input:focus, .field select:focus{outline:none; border-color:var(--maroon); box-shadow:0 0 0 3px rgba(124,45,58,0.12);}
 .field .hint{font-size:11px; color:var(--text-mute); margin-top:5px;}
+.text-btn{background:var(--panel-2); border:1.5px solid var(--line); border-radius:20px; padding:5px 12px; font-size:11px; font-family:var(--font-plain); font-weight:600; cursor:pointer; white-space:nowrap; color:var(--text-dim); line-height:1.4;}
+.text-btn:hover{border-color:var(--maroon); background:var(--maroon-bg); color:var(--maroon);}
+.text-btn.active{border-color:var(--maroon); background:var(--maroon-bg); color:var(--maroon);}
+.field-label-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:6px;}
+.field-label-row label{margin-bottom:0;}
+.field-label-row .icon-btn-group{display:flex; gap:6px;}
+.mini-panel{background:var(--panel-2); border:1.5px solid var(--line); border-radius:4px; padding:14px; margin-top:8px;}
+.mini-panel select{margin-bottom:8px;}
 .btn{background:var(--amber); color:#ffffff; border:none; border-radius:4px; padding:11px 20px; font-family:var(--font-plain); font-weight:600; font-size:14px; cursor:pointer; transition:opacity .15s, box-shadow .15s; box-shadow:0 2px 8px rgba(20,22,28,0.25);}
 .btn:hover{opacity:0.9;} .btn.ghost{background:var(--purple-bg); color:var(--purple); border:1.5px solid var(--purple-dim); box-shadow:none;}
 .btn.ghost:hover{border-color:var(--purple); opacity:1;} .btn:disabled{opacity:0.4; cursor:not-allowed; box-shadow:none;}
@@ -135,8 +143,8 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
   .splash-powered span{font-size:20px;}
   .splash-powered img{height:26px;}
 }
-
-
+ 
+ 
 @media (max-width: 640px){
   .wrap{padding:0 16px;}
   header.top .wrap{flex-wrap:wrap; gap:10px;}
@@ -163,7 +171,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
 </style>
 </head>
 <body>
-
+ 
 <header class="top" id="siteHeader" style="display:none;">
   <div class="wrap">
     <div class="brand">
@@ -172,9 +180,9 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
     <div class="tag mono" id="dbStatus">Connecting to database…</div>
   </div>
 </header>
-
+ 
 <div class="wrap">
-
+ 
   <div class="view active" id="view-splash">
     <div class="splash-wrap">
       <div class="splash-title">RAASTA</div>
@@ -189,7 +197,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       <button class="btn splash-btn" onclick="handleGetStarted()">Get started <span class="arrow">&#8594;</span></button>
     </div>
   </div>
-
+ 
   <div class="view" id="view-auth">
     <div class="hero" style="border-bottom:none; padding-bottom:12px;">
       <div class="eyebrow">Employee sign-in</div>
@@ -235,7 +243,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       </div>
     </div>
   </div>
-
+ 
   <div class="view" id="view-landing">
     <div class="hero">
       <div class="eyebrow">Site visit cost tracking</div>
@@ -261,7 +269,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       </div>
     </div>
   </div>
-
+ 
   <div class="view" id="view-newjourney">
     <a class="back-link" onclick="goTo('landing')">← Back</a>
     <div class="panel">
@@ -279,7 +287,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       </div>
     </div>
   </div>
-
+ 
   <div class="view" id="view-manual">
     <a class="back-link" onclick="goTo('landing')">← Back</a>
     <div class="panel">
@@ -292,7 +300,6 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
         <div class="field">
           <label>Engine capacity (cc)</label>
           <input type="number" id="manualCcInput" placeholder="e.g. 1300" oninput="updateManualBand()">
-          <div class="hint">Check the registration book (yellow "book") or ask the driver.</div>
         </div>
       </div>
       <div id="manualBandResult" style="display:none; margin-bottom:4px;">
@@ -301,9 +308,8 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       <div class="field">
         <label>Purchase / invoice value (Rs) <span style="color:var(--text-mute);">(only needed above 1000cc)</span></label>
         <input type="number" id="manualInvoiceInput" placeholder="e.g. 5000000">
-        <div class="hint">Used only to estimate annual token tax for cars over 1000cc — it's a % of this value. Leave blank for 1000cc and under, that tax is a fixed Rs 20,000/year.</div>
       </div>
-
+ 
       <div class="section-title" style="margin-top:8px;">How much will it be driven?</div>
       <div class="form-grid-2">
         <div class="field">
@@ -318,56 +324,87 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
           </select>
         </div>
       </div>
-
+ 
       <div class="section-title" style="margin-top:8px;">Running costs (best estimates — edit anything you actually know)</div>
       <div class="form-grid-2">
         <div class="field">
           <label>Fuel efficiency (km per litre)</label>
           <input type="number" id="manualEfficiencyInput" step="0.1" placeholder="e.g. 14" oninput="this.dataset.userEdited='1'">
-          <div class="hint">Auto-filled from a typical value for the cc band once entered above — small cars ~15-19 km/l, mid-size ~12-14.5, larger sedans/SUVs ~10-12. Adjust if the driver knows the real figure.</div>
         </div>
         <div class="field">
-          <label>Fuel price (Rs per litre)</label>
+          <div class="field-label-row">
+            <label>Fuel price (Rs per litre)</label>
+            <div class="icon-btn-group">
+              <button type="button" class="text-btn" id="fuelTypeIconBtn" onclick="toggleFuelTypePicker()">Type of oil</button>
+              <button type="button" class="text-btn" id="avgIconBtn" onclick="toggleAvgPicker()">Calculate average</button>
+            </div>
+          </div>
           <input type="number" id="manualFuelPriceInput" step="0.01" placeholder="e.g. 320.73">
-          <div class="hint">Pre-filled with the current price on file — update if it's changed.</div>
+ 
+          <div id="fuelTypePicker" class="mini-panel" style="display:none;">
+            <select id="fuelTypeSelect" onchange="applyFuelType()">
+              <option value="petrol">Petrol (Super)</option>
+              <option value="diesel">High Speed Diesel</option>
+              <option value="lsd">Light Speed Diesel</option>
+              <option value="lpg">LPG</option>
+              <option value="kerosene">Kerosene Oil</option>
+            </select>
+          </div>
+ 
+          <div id="avgPicker" class="mini-panel" style="display:none;">
+            <select id="miniAvgFuelType">
+              <option value="petrol_price">Petrol (Super)</option>
+              <option value="diesel_price">High Speed Diesel</option>
+              <option value="lsd_price">Light Speed Diesel</option>
+              <option value="lpg_price">LPG</option>
+              <option value="kerosene_price">Kerosene Oil</option>
+            </select>
+            <div class="form-grid-2">
+              <div class="field" style="margin-bottom:8px;">
+                <label style="font-size:11px;">From date</label>
+                <input type="date" id="miniAvgFrom">
+              </div>
+              <div class="field" style="margin-bottom:8px;">
+                <label style="font-size:11px;">To date</label>
+                <input type="date" id="miniAvgTo">
+              </div>
+            </div>
+            <button type="button" class="btn ghost" style="width:100%;" onclick="applyFuelAverage()">Use average for this range</button>
+            <div id="miniAvgResult" style="margin-top:8px; font-size:12px; color:var(--text-dim);"></div>
+          </div>
         </div>
       </div>
       <div class="form-grid-2">
         <div class="field">
           <label>Oil changes per year (estimate)</label>
           <input type="number" id="manualOilCountInput" placeholder="e.g. 4">
-          <div class="hint">Most cars driven for work need one roughly every 3,000-5,000 km.</div>
         </div>
         <div class="field">
           <label>Cost per oil change (Rs)</label>
           <input type="number" id="manualOilCostInput" placeholder="e.g. 4000">
-          <div class="hint">Ask a workshop, or check a past receipt — typically Rs 3,000-5,500.</div>
         </div>
       </div>
       <div class="form-grid-2">
         <div class="field">
           <label>Annual maintenance & repair budget (Rs)</label>
           <input type="number" id="manualMaintenanceInput" placeholder="e.g. 50000">
-          <div class="hint">General servicing, parts and repairs — a rough yearly figure is fine.</div>
         </div>
         <div class="field">
           <label>Annual insurance estimate (Rs)</label>
           <input type="number" id="manualInsuranceInput" placeholder="e.g. 150000">
-          <div class="hint">Use a real quote if you have one, otherwise insurers in Pakistan typically price comprehensive cover around 3-5% of the car's value per year.</div>
         </div>
       </div>
       <div class="field">
         <label>Annual token tax override (Rs) <span style="color:var(--text-mute);">(optional)</span></label>
         <input type="number" id="manualTokenOverrideInput" placeholder="Leave blank to auto-estimate from engine cc">
-        <div class="hint">Only fill this in if you already know the actual amount paid — otherwise it's calculated automatically using current Punjab Excise rules.</div>
       </div>
-
+ 
       <div id="manualError" class="hint" style="display:none; color:var(--danger); margin-bottom:12px;"></div>
       <div class="btn-row">
         <button class="btn" onclick="calcManual()">Calculate allowance estimate</button>
       </div>
     </div>
-
+ 
     <div class="panel" id="manualResults" style="display:none;">
       <div class="section-title">Estimated cost per kilometre</div>
       <div class="cost-stat-grid">
@@ -386,7 +423,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       <div class="manual-note">Token tax used in this estimate: <span id="manualTokenComputed" class="mono"></span>. This is a budgeting estimate based on the assumptions entered above, not a substitute for actual logged journeys or receipts.</div>
     </div>
   </div>
-
+ 
   <div class="view" id="view-tracking">
     <div class="panel">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
@@ -407,7 +444,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
         <button class="btn ghost" onclick="simulateStep()">Simulate GPS step (demo)</button>
       </div>
     </div>
-
+ 
     <div class="panel">
       <div class="section-title">Cost proofs for this journey</div>
       <div class="expense-row">
@@ -434,7 +471,7 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       <div class="note-box"><b>Live now.</b> Receipt files upload for real to your Supabase <span class="mono">receipts</span> bucket when you end the journey.</div>
     </div>
   </div>
-
+ 
   <div class="view" id="view-summary">
     <div class="panel">
       <div class="section-title">Journey summary</div>
@@ -448,15 +485,15 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
       <div class="btn-row"><button class="btn" onclick="goTo('landing')">Done — return home</button></div>
     </div>
   </div>
-
+ 
   <div class="view" id="view-history">
     <a class="back-link" onclick="goTo('landing')">← Back</a>
     <div class="section-title">Past journeys</div>
     <div id="historyList"></div>
   </div>
-
+ 
 </div>
-
+ 
 <script>
 const ETIMAAD_LOGO_SRC = "data:image/png;base64,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";
 document.querySelectorAll('.etimaad-logo-img').forEach(img => img.src = ETIMAAD_LOGO_SRC);
@@ -464,13 +501,15 @@ document.querySelectorAll('.etimaad-logo-img').forEach(img => img.src = ETIMAAD_
 const SUPABASE_URL = 'https://dnhxcffckfslksrpypzs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuaHhjZmZja2ZzbGtzcnB5cHpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2OTQ4MzksImV4cCI6MjEwMDI3MDgzOX0.8adsbSgmxVFL4wws1CjJa93Wwww0FFHC_D_xVCxOvZo';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-let state = { cc:null, band:null, points:[], distanceKm:0, fuelPrice:320.73, vehicleId:null, files:{} };
+ 
+let state = { cc:null, band:null, points:[], distanceKm:0,
+  prices:{ petrol:320.73, diesel:320.73, lsd:180, lpg:250, kerosene:250 },
+  vehicleId:null, files:{} };
 let liveMap = null, liveMarker = null, livePolyline = null;
 let currentEmployee = null;
-
+ 
 const SESSION_KEY = 'raasta_employee_id';
-
+ 
 (async function checkConnection(){
   const tag = document.getElementById('dbStatus');
   const { error } = await db.from('vehicles').select('id').limit(1);
@@ -483,17 +522,30 @@ const SESSION_KEY = 'raasta_employee_id';
     tag.classList.add('status-ok');
   }
 })();
-
+ 
 (async function loadFuelPrice(){
-  const { data, error } = await db.from('settings').select('value').eq('key', 'fuel_price').single();
-  if(!error && data && !isNaN(parseFloat(data.value))){
-    state.fuelPrice = parseFloat(data.value);
+  const { data, error } = await db.from('settings').select('key,value')
+    .in('key', ['fuel_price','diesel_price','lsd_price','lpg_price','kerosene_price']);
+  if(!error && data){
+    data.forEach(row => {
+      const v = parseFloat(row.value);
+      if(isNaN(v)) return;
+      if(row.key === 'fuel_price') state.prices.petrol = v;
+      if(row.key === 'diesel_price') state.prices.diesel = v;
+      if(row.key === 'lsd_price') state.prices.lsd = v;
+      if(row.key === 'lpg_price') state.prices.lpg = v;
+      if(row.key === 'kerosene_price') state.prices.kerosene = v;
+    });
     recalcLive();
   } else {
-    console.log('Using fallback fuel price — could not load live price from settings table.');
+    console.log('Using fallback fuel prices — could not load live prices from settings table.');
   }
 })();
-
+ 
+function getFuelPrice(type){
+  return state.prices[type] !== undefined ? state.prices[type] : state.prices.petrol;
+}
+ 
 // Resume a saved session only when the person proceeds past the splash screen —
 // never automatically on page load, so the splash always shows first.
 async function handleGetStarted(){
@@ -512,7 +564,7 @@ async function handleGetStarted(){
     localStorage.removeItem(SESSION_KEY);
   }
 }
-
+ 
 function goTo(view){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + view).classList.add('active');
@@ -520,23 +572,23 @@ function goTo(view){
   if(view === 'history') renderHistory();
   if(view === 'manual'){
     const priceInput = document.getElementById('manualFuelPriceInput');
-    if(!priceInput.value) priceInput.value = state.fuelPrice;
+    if(!priceInput.value) priceInput.value = state.prices.petrol;
   }
   if(view !== 'auth' && view !== 'splash' && !currentEmployee) { goTo('auth'); return; }
 }
-
+ 
 function escapeHtml(str){
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
-
+ 
 function clearAuthError(){
   const hint = document.getElementById('authHint');
   hint.textContent = "We'll look up your profile, or help you create one.";
   hint.style.color = '';
 }
-
+ 
 async function checkEmployee(){
   const empId = document.getElementById('employeeIdInput').value.trim();
   const hint = document.getElementById('authHint');
@@ -568,7 +620,7 @@ async function checkEmployee(){
     document.getElementById('signupPanel').style.display = 'block';
   }
 }
-
+ 
 async function createEmployee(){
   const empId = document.getElementById('signupEmpId').value.trim();
   const name = document.getElementById('signupName').value.trim();
@@ -598,12 +650,12 @@ async function createEmployee(){
   currentEmployee = data;
   enterApp();
 }
-
+ 
 function cancelSignup(){
   document.getElementById('signupPanel').style.display = 'none';
   clearAuthError();
 }
-
+ 
 function showSignupDirectly(){
   document.getElementById('signupPanel').style.display = 'block';
   const empIdVal = document.getElementById('employeeIdInput').value.trim();
@@ -613,14 +665,14 @@ function showSignupDirectly(){
   hint.style.color = '';
   document.getElementById('signupPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-
+ 
 function enterApp(){
   localStorage.setItem(SESSION_KEY, currentEmployee.employee_id);
   document.getElementById('employeeChip').innerHTML =
     `Signed in as <b>${escapeHtml(currentEmployee.name)}</b> · ${escapeHtml(currentEmployee.project)}, ${escapeHtml(currentEmployee.project_location)} — <a onclick="switchEmployee()">Switch</a>`;
   goTo('landing');
 }
-
+ 
 function switchEmployee(){
   currentEmployee = null;
   localStorage.removeItem(SESSION_KEY);
@@ -629,7 +681,7 @@ function switchEmployee(){
   clearAuthError();
   goTo('auth');
 }
-
+ 
 function classifyBand(cc){
   if(cc <= 1000) return "Small (<=1000cc)";
   if(cc <= 1500) return "Mid (1001-1500cc)";
@@ -651,7 +703,69 @@ function getEfficiency(band){
   if(band && band.startsWith('Mid')) return 14;
   return 12;
 }
-
+ 
+// ---- Manual mode: fuel price icon tools ----
+function toggleFuelTypePicker(){
+  document.getElementById('avgPicker').style.display = 'none';
+  document.getElementById('avgIconBtn').classList.remove('active');
+  const el = document.getElementById('fuelTypePicker');
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? 'block' : 'none';
+  document.getElementById('fuelTypeIconBtn').classList.toggle('active', opening);
+}
+function toggleAvgPicker(){
+  document.getElementById('fuelTypePicker').style.display = 'none';
+  document.getElementById('fuelTypeIconBtn').classList.remove('active');
+  const el = document.getElementById('avgPicker');
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? 'block' : 'none';
+  document.getElementById('avgIconBtn').classList.toggle('active', opening);
+}
+function applyFuelType(){
+  const type = document.getElementById('fuelTypeSelect').value;
+  document.getElementById('manualFuelPriceInput').value = getFuelPrice(type);
+}
+async function applyFuelAverage(){
+  const fuelKey = document.getElementById('miniAvgFuelType').value;
+  const from = document.getElementById('miniAvgFrom').value;
+  const to = document.getElementById('miniAvgTo').value;
+  const resultEl = document.getElementById('miniAvgResult');
+ 
+  if(!from || !to){
+    resultEl.style.color = 'var(--danger)';
+    resultEl.textContent = 'Select both a from date and a to date.';
+    return;
+  }
+ 
+  resultEl.style.color = '';
+  resultEl.textContent = 'Calculating…';
+ 
+  const { data, error } = await db.from('fuel_price_history')
+    .select(`price_date, ${fuelKey}`)
+    .gte('price_date', from)
+    .lte('price_date', to)
+    .order('price_date', { ascending: true });
+ 
+  if(error){
+    console.error(error);
+    resultEl.style.color = 'var(--danger)';
+    resultEl.textContent = 'Could not load historical price data.';
+    return;
+  }
+ 
+  const values = (data || []).map(r => parseFloat(r[fuelKey])).filter(v => !isNaN(v));
+  if(values.length === 0){
+    resultEl.style.color = 'var(--danger)';
+    resultEl.textContent = 'No recorded prices for this range yet — history only exists from the day the daily scraper started running.';
+    return;
+  }
+ 
+  const avg = values.reduce((a,b) => a + b, 0) / values.length;
+  document.getElementById('manualFuelPriceInput').value = avg.toFixed(2);
+  resultEl.style.color = 'var(--ok)';
+  resultEl.textContent = `Applied: Rs ${avg.toFixed(2)} average over ${values.length} recorded day(s).`;
+}
+ 
 // ---- Manual mode: allowance estimator ----
 // Mirrors the same per-km cost model used for live journeys (fuel, oil, maintenance,
 // token tax), plus an insurance line, using assumptions instead of GPS/receipt data.
@@ -683,16 +797,16 @@ function calcManual(){
   const kmVal = parseFloat(document.getElementById('manualKmInput').value) || 0;
   const period = document.getElementById('manualKmPeriod').value;
   const annualKm = period === 'month' ? kmVal * 12 : kmVal;
-
+ 
   const efficiency = parseFloat(document.getElementById('manualEfficiencyInput').value) || 0;
-  const fuelPrice = parseFloat(document.getElementById('manualFuelPriceInput').value) || state.fuelPrice;
+  const fuelPrice = parseFloat(document.getElementById('manualFuelPriceInput').value) || state.prices.petrol;
   const oilCount = parseFloat(document.getElementById('manualOilCountInput').value) || 0;
   const oilCost = parseFloat(document.getElementById('manualOilCostInput').value) || 0;
   const maintenance = parseFloat(document.getElementById('manualMaintenanceInput').value) || 0;
   const insurance = parseFloat(document.getElementById('manualInsuranceInput').value) || 0;
   const tokenOverrideRaw = document.getElementById('manualTokenOverrideInput').value;
   const tokenTax = tokenOverrideRaw !== '' ? (parseFloat(tokenOverrideRaw) || 0) : estimateTokenTax(cc, invoiceValue);
-
+ 
   const errBox = document.getElementById('manualError');
   if(!annualKm || !efficiency){
     errBox.textContent = 'Enter at least the estimated distance and fuel efficiency to calculate.';
@@ -701,7 +815,7 @@ function calcManual(){
     return;
   }
   errBox.style.display = 'none';
-
+ 
   const fuelPerKm = fuelPrice / efficiency;
   const oilPerKm = (oilCount * oilCost) / annualKm;
   const maintPerKm = maintenance / annualKm;
@@ -710,7 +824,7 @@ function calcManual(){
   const totalPerKm = fuelPerKm + oilPerKm + maintPerKm + tokenPerKm + insurancePerKm;
   const annualAllowance = totalPerKm * annualKm;
   const monthlyAllowance = annualAllowance / 12;
-
+ 
   document.getElementById('manualFuelPerKm').textContent = 'Rs ' + fuelPerKm.toFixed(2);
   document.getElementById('manualOilPerKm').textContent = 'Rs ' + oilPerKm.toFixed(2);
   document.getElementById('manualMaintPerKm').textContent = 'Rs ' + maintPerKm.toFixed(2);
@@ -722,10 +836,10 @@ function calcManual(){
   document.getElementById('manualTokenComputed').textContent =
     'Rs ' + Math.round(tokenTax).toLocaleString() + ' / year' +
     (tokenOverrideRaw !== '' ? ' (manual override)' : ' (auto-estimated from engine cc' + (cc > 1000 ? ' & invoice value' : '') + ')');
-
+ 
   document.getElementById('manualResults').style.display = 'block';
 }
-
+ 
 async function startJourney(){
   if(!currentEmployee){ goTo('auth'); return; }
   state.points = []; state.distanceKm = 0; state.files = {};
@@ -743,15 +857,15 @@ async function startJourney(){
     el.classList.remove('attached');
     el.childNodes[0].textContent = '+ attach proof';
   });
-
+ 
   const { data, error } = await db.from('vehicles')
     .insert({ cc: state.cc, band: state.band })
     .select().single();
   if(!error) state.vehicleId = data.id;
   else console.error('Could not create vehicle row', error);
-
+ 
   goTo('tracking');
-
+ 
   if(navigator.geolocation){
     state.watchId = navigator.geolocation.watchPosition(
       pos => addPoint(pos.coords.latitude, pos.coords.longitude),
@@ -760,7 +874,7 @@ async function startJourney(){
     );
   }
 }
-
+ 
 function haversine(lat1, lon1, lat2, lon2){
   const R = 6371;
   const dLat = (lat2-lat1) * Math.PI/180, dLon = (lon2-lon1) * Math.PI/180;
@@ -810,21 +924,21 @@ function fileSelected(input, labelId){
   }
 }
 function recalcLive(){
-  const fuelCost = state.fuelPrice * state.distanceKm / getEfficiency(state.band);
+  const fuelCost = state.prices.petrol * state.distanceKm / getEfficiency(state.band);
   document.getElementById('liveFuelCost').textContent = 'Rs ' + Math.round(fuelCost).toLocaleString();
 }
-
+ 
 async function endJourney(){
   if(state.watchId) navigator.geolocation.clearWatch(state.watchId);
   const dist = state.distanceKm;
   const eff = getEfficiency(state.band);
-  const fuel = state.fuelPrice * dist / eff;
+  const fuel = state.prices.petrol * dist / eff;
   const tokenAnnual = parseFloat(document.getElementById('tokenTaxInput').value) || 0;
   const repair = parseFloat(document.getElementById('repairInput').value) || 0;
   const oil = parseFloat(document.getElementById('oilInput').value) || 0;
   const tokenAmortised = (tokenAnnual / 15000) * dist;
   const total = fuel + tokenAmortised + repair + oil;
-
+ 
   document.getElementById('sumBand').textContent = state.band || '—';
   document.getElementById('sumDist').textContent = dist.toFixed(2) + ' km';
   document.getElementById('sumFuel').textContent = 'Rs ' + Math.round(fuel).toLocaleString();
@@ -832,18 +946,18 @@ async function endJourney(){
   document.getElementById('sumMaint').textContent = 'Rs ' + Math.round(repair).toLocaleString();
   document.getElementById('sumOil').textContent = 'Rs ' + Math.round(oil).toLocaleString();
   document.getElementById('sumTotal').textContent = 'Rs ' + Math.round(total).toLocaleString();
-
+ 
   goTo('summary');
-
+ 
   const { data: journey, error } = await db.from('journeys').insert({
     vehicle_id: state.vehicleId, band: state.band, distance_km: dist,
     fuel_cost: fuel, token_tax_cost: tokenAmortised, maintenance_cost: repair,
     oil_cost: oil, total_cost: total,
     employee_id: currentEmployee ? currentEmployee.employee_id : null
   }).select().single();
-
+ 
   if(error){ console.error('Could not save journey', error); return; }
-
+ 
   for(const [type, file] of Object.entries(state.files)){
     const path = `${journey.id}/${type}-${file.name}`;
     const { error: upErr } = await db.storage.from('receipts').upload(path, file);
@@ -855,7 +969,7 @@ async function endJourney(){
     });
   }
 }
-
+ 
 async function renderHistory(){
   const list = document.getElementById('historyList');
   list.innerHTML = '<div class="empty-state">Loading…</div>';
@@ -880,4 +994,4 @@ async function renderHistory(){
 </script>
 </body>
 </html>
-      
+ 
