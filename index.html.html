@@ -287,29 +287,33 @@ header.top .tag.status-bad{color:var(--danger); border-color:var(--danger);}
           </div>
         </div>
  
-      <div class="form-grid-2">
-        <div class="field">
-          <label>Oil changes per year (estimate)</label>
-          <input type="number" id="manualOilCountInput" placeholder="e.g. 4">
+      <!-- Oil, maintenance, insurance & token tax override hidden from the interface per request
+           — they default to 0/auto-estimate so the calculation still runs and still saves to Supabase. -->
+      <div style="display:none;">
+        <div class="form-grid-2">
+          <div class="field">
+            <label>Oil changes per year (estimate)</label>
+            <input type="number" id="manualOilCountInput" placeholder="e.g. 4">
+          </div>
+          <div class="field">
+            <label>Cost per oil change (Rs)</label>
+            <input type="number" id="manualOilCostInput" placeholder="e.g. 4000">
+          </div>
         </div>
-        <div class="field">
-          <label>Cost per oil change (Rs)</label>
-          <input type="number" id="manualOilCostInput" placeholder="e.g. 4000">
+        <div class="form-grid-2">
+          <div class="field">
+            <label>Annual maintenance & repair budget (Rs)</label>
+            <input type="number" id="manualMaintenanceInput" placeholder="e.g. 50000">
+          </div>
+          <div class="field">
+            <label>Annual insurance estimate (Rs)</label>
+            <input type="number" id="manualInsuranceInput" placeholder="e.g. 150000">
+          </div>
         </div>
-      </div>
-      <div class="form-grid-2">
-        <div class="field">
-          <label>Annual maintenance & repair budget (Rs)</label>
-          <input type="number" id="manualMaintenanceInput" placeholder="e.g. 50000">
+        <div class="field" style="margin-bottom:0;">
+          <label>Annual token tax override (Rs) <span style="color:var(--text-mute);">(optional)</span></label>
+          <input type="number" id="manualTokenOverrideInput" placeholder="Leave blank to auto-estimate from engine cc">
         </div>
-        <div class="field">
-          <label>Annual insurance estimate (Rs)</label>
-          <input type="number" id="manualInsuranceInput" placeholder="e.g. 150000">
-        </div>
-      </div>
-      <div class="field" style="margin-bottom:0;">
-        <label>Annual token tax override (Rs) <span style="color:var(--text-mute);">(optional)</span></label>
-        <input type="number" id="manualTokenOverrideInput" placeholder="Leave blank to auto-estimate from engine cc">
       </div>
  
       <div id="manualError" style="display:none; color:var(--danger); font-size:13px; margin-top:16px;"></div>
